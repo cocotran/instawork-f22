@@ -24,11 +24,17 @@ def add_member(request):
     # TODO: validate all fields
 
     try:
+        phone_number = request.body.get("phone_number")
+        email = request.body.get("email")
+
+        if Member.objects.get(phone_number=phone_number, email=email).exists():
+            return f"Member already exists!"
+
         new_member = Member(
             first_name=request.body.get("first_name"),
             last_name=request.body.get("last_name"),
-            phone_number=request.body.get("phone_number"),
-            email=request.body.get("email"),
+            phone_number=phone_number,
+            email=email,
             role=request.body.get("role"),
         )
         new_member.save()
