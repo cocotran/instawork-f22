@@ -8,7 +8,7 @@ class Member(models.Model):
     last_name = models.CharField(max_length=64)
     phone_number = models.CharField(max_length=10, unique=True)
     email = models.CharField(max_length=64, unique=True)
-    role = models.CharField(max_length=64, default='regular')
+    role = models.CharField(max_length=64, default="regular")
 
     def __str__(self) -> str:
         return f"{self.first_name} {self.last_name}-{self.phone_number}-{self.email}-{self.role}"

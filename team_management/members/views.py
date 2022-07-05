@@ -16,7 +16,7 @@ def get_member_by_id(request, id: int):
 
 def add_member(request):
     # Make sure all info is filled
-    required_fields = ['first_name', 'last_name', 'phone_number', 'email']
+    required_fields = ["first_name", "last_name", "phone_number", "email"]
     for field in required_fields:
         if request.body.get(field, "") == "":
             return f"Missing value for {field}"
@@ -25,11 +25,11 @@ def add_member(request):
 
     try:
         new_member = Member(
-            first_name = request.body.get("first_name"),
-            last_name = request.body.get("last_name"),
-            phone_number = request.body.get("phone_number"),
-            email = request.body.get("email"),
-            role = request.body.get("role")
+            first_name=request.body.get("first_name"),
+            last_name=request.body.get("last_name"),
+            phone_number=request.body.get("phone_number"),
+            email=request.body.get("email"),
+            role=request.body.get("role"),
         )
         new_member.save()
         return f"Member {new_member} was saved successfully"
