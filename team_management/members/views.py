@@ -10,7 +10,7 @@ def get_all_members(request):
 
 
 def get_member_by_id(request, id: int):
-    member = Member.objects.filter(id=id)
+    member = Member.objects.get(id=id)
     return HttpResponse(member)
 
 
