@@ -14,7 +14,7 @@ class MemberForm(forms.Form):
         widget=forms.TextInput(attrs={"placeholder": "Last name"}),
     )
     phone_number = forms.CharField(
-        max_length=12,
+        max_length=10,
         required=True,
         widget=forms.TextInput(attrs={"placeholder": "Phone number"}),
     )
