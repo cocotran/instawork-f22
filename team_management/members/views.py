@@ -8,8 +8,18 @@ from django.core import serializers
 from members.models import Member
 
 # Create your views here.
-@csrf_exempt
 def get_all_members(request):
+    try:
+        members = Member.objects.all().values()
+        return render(
+            request=request, template_name="index.html", context={"members": members}
+        )
+    except Exception as err:
+        return HttpResponse(err)
+
+
+@csrf_exempt
+def get_all_members_api(request):
     try:
         members = serializers.serialize("json", Member.objects.all())
         return HttpResponse(members)
@@ -18,7 +28,7 @@ def get_all_members(request):
 
 
 @csrf_exempt
-def get_member_by_id(request, id: int):
+def get_member_by_id_api(request, id: int):
     try:
         member = serializers.serialize("json", [Member.objects.get(id=id)])
         return HttpResponse(member)
@@ -27,7 +37,7 @@ def get_member_by_id(request, id: int):
 
 
 @csrf_exempt
-def add_member(request):
+def add_member_api(request):
     if request.method == "POST":
         request_body = json.loads(request.body)
         valid = Member.is_valid_request(request_body)
@@ -57,7 +67,7 @@ def add_member(request):
 
 
 @csrf_exempt
-def edit_member(request, id: int):
+def edit_member_api(request, id: int):
     if request.method == "PUT":
         try:
             request_body = json.loads(request.body)
@@ -77,7 +87,7 @@ def edit_member(request, id: int):
 
 
 @csrf_exempt
-def delete_member(request, id: int):
+def delete_member_api(request, id: int):
     try:
         member_to_delete = Member.objects.get(id=id)
         member_to_delete.delete()
