@@ -3,6 +3,7 @@ import json
 from django.http import HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
+from django.core import serializers
 
 from members.models import Member
 
@@ -10,7 +11,7 @@ from members.models import Member
 @csrf_exempt
 def get_all_members(request):
     try:
-        members = Member.objects.all()
+        members = serializers.serialize("json", Member.objects.all())
         return HttpResponse(members)
     except Exception as err:
         return HttpResponse(err)
@@ -19,7 +20,7 @@ def get_all_members(request):
 @csrf_exempt
 def get_member_by_id(request, id: int):
     try:
-        member = Member.objects.get(id=id)
+        member = serializers.serialize("json", [Member.objects.get(id=id)])
         return HttpResponse(member)
     except Exception as err:
         return HttpResponse(err)
@@ -29,13 +30,10 @@ def get_member_by_id(request, id: int):
 def add_member(request):
     if request.method == "POST":
         request_body = json.loads(request.body)
-        # Make sure all info is filled
-        required_fields = ["first_name", "last_name", "phone_number", "email"]
-        for field in required_fields:
-            if request_body.get(field, "") == "":
-                return HttpResponse(f"Missing value for {field}")
+        valid = Member.is_valid_request(request_body)
+        if not valid[0]:
+            return HttpResponse(valid[1])
 
-        # TODO: validate all fields
         try:
             phone_number = request_body.get("phone_number")
             email = request_body.get("email")
@@ -63,6 +61,10 @@ def edit_member(request, id: int):
     if request.method == "PUT":
         try:
             request_body = json.loads(request.body)
+            valid = Member.is_valid_request(request_body)
+            if not valid[0]:
+                return HttpResponse(valid[1])
+
             member = Member.objects.get(id=id)
             for key, value in request_body.items():
                 setattr(member, key, value)
