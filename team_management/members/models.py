@@ -5,7 +5,7 @@ from django.db import models
 class Member(models.Model):
     first_name = models.CharField(max_length=64)
     last_name = models.CharField(max_length=64)
-    phone_number = models.CharField(max_length=10, unique=True)
+    phone_number = models.CharField(max_length=12, unique=True)
     email = models.CharField(max_length=64, unique=True)
     role = models.CharField(max_length=64, default="regular")
 

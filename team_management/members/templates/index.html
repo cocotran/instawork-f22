@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    {% load static %}
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,26 +10,87 @@
 </head>
 
 <body>
-    <!-- <script>
-        const members = JSON.parse(document.getElementById('members_json').textContent);
-        document.getElementById("member-noun").innerText = `member${members.length > 1 ? "s" : ""}` 
-    </script> -->
+    <style>
+        body {
+            font-family: Sans-Serif;
+            padding: 1rem 1.25rem;
+        }
 
-    <h2>Team members</h2>
-    <h3>You have {{ members|length }} team
-        {% if members|length_is:"1" %}
-        member.
-        {% else %}
-        members.
-        {% endif %}
-    </h3>
+        ul {
+            list-style-type: none;
+            padding-inline-start: 0px;
+        }
+
+        li {
+            border-top: 1px rgba(209, 213, 219, 1) solid;
+            padding: 0.6rem 0rem;
+        }
+
+        h4 {
+            margin-block-start: 0.6em;
+            margin-block-end: 0em;
+        }
+
+        p {
+            color: rgb(149, 156, 169);
+            margin-block-start: 0.6em;
+            margin-block-end: 0.6em;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            justify-items: center;
+        }
+
+        #admin-tag {
+            font-size: 0.8rem;
+            color: rgba(107, 114, 128, 1);
+        }
+
+        #user-container {
+            display: flex;
+        }
+
+        #user-info {
+            margin-left: 1rem;
+        }
+
+        #mem-num {
+            color: rgb(149, 156, 169);
+            font-weight: 400;
+        }
+    </style>
+
+    <header>
+        <div>
+            <h2>Team members</h2>
+            <h3 id="mem-num">You have {{ members|length }} team
+                {% if members|length_is:"1" %}
+                member.
+                {% else %}
+                members.
+                {% endif %}
+            </h3>
+        </div>
+        <img src="{% static 'add.svg' %}" alt="Add member" />
+    </header>
+
+    <br>
 
     <ul>
         {% for member in members %}
-        <li>
-            <h4>{{ member.first_name }} {{ member.last_name }}</h4>
-            <p>{{ member.phone_number }}</p>
-            <p>{{ member.email }}</p>
+        <li id="user-container">
+            <img src="{% static 'profile-picture.svg' %}" alt="Profile picture" />
+            <div id="user-info">
+                <h4>{{ member.first_name }} {{ member.last_name }}
+                    {% if member.role == "admin" %}
+                    <span id="admin-tag"> (admin)</span>
+                    {% endif %}
+                </h4>
+                <p>{{ member.phone_number }}</p>
+                <p>{{ member.email }}</p>
+            </div>
         </li>
         {% endfor %}
     </ul>
