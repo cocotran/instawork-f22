@@ -1,11 +1,12 @@
 import json
 
 from django.http import HttpResponse, HttpResponseNotAllowed
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.core import serializers
 
 from members.models import Member
+from members.utils.forms import MemberForm
 
 # Create your views here.
 def get_all_members(request):
@@ -36,6 +37,41 @@ def get_member_by_id_api(request, id: int):
         return HttpResponse(err)
 
 
+def add_member(request):
+    if request.method == "POST":
+        form = MemberForm(request.POST)
+        if form.is_valid():
+            member_info = {
+                "first_name": form.cleaned_data.get("first_name"),
+                "last_name": form.cleaned_data.get("last_name"),
+                "phone_number": form.cleaned_data.get("phone_number"),
+                "email": form.cleaned_data.get("email"),
+                "role": form.cleaned_data.get("role", "regular"),
+            }
+
+            valid = Member.is_valid_request(member_info)
+            if not valid[0]:
+                return HttpResponse(valid[1])
+
+            try:
+                phone_number = form.cleaned_data.get("phone_number")
+
+                if Member.objects.filter(phone_number=phone_number).exists():
+                    return HttpResponse(f"Member already exists!")
+
+                new_member = Member(**member_info)
+                new_member.save()
+                return redirect("/members/")
+            except Exception as err:
+                return HttpResponse(err)
+        else:
+            return HttpResponse("Invalid form")
+    else:
+        return render(
+            request=request, template_name="add.html", context={"form": MemberForm}
+        )
+
+
 @csrf_exempt
 def add_member_api(request):
     if request.method == "POST":
@@ -46,7 +82,6 @@ def add_member_api(request):
 
         try:
             phone_number = request_body.get("phone_number")
-            email = request_body.get("email")
 
             if Member.objects.filter(phone_number=phone_number).exists():
                 return HttpResponse(f"Member already exists!")
@@ -55,7 +90,7 @@ def add_member_api(request):
                 first_name=request_body.get("first_name"),
                 last_name=request_body.get("last_name"),
                 phone_number=phone_number,
-                email=email,
+                email=request_body.get("email"),
                 role=request_body.get("role", "regular"),
             )
             new_member.save()
