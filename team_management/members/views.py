@@ -11,7 +11,7 @@ from members.utils.forms import MemberForm
 # Create your views here.
 def get_all_members(request):
     try:
-        members = Member.objects.all().values()
+        members = Member.objects.all().values() # get all members in dict form
         return render(
             request=request, template_name="index.html", context={"members": members}
         )

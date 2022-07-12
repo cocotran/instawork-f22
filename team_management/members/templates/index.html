@@ -43,6 +43,11 @@
             justify-items: center;
         }
 
+        a {
+            text-decoration: none;
+            color: black;
+        }
+
         #admin-tag {
             font-size: 0.8rem;
             color: rgba(107, 114, 128, 1);
@@ -82,17 +87,19 @@
 
     <ul>
         {% for member in members %}
-        <li id="user-container">
-            <img src="{% static 'profile-picture.svg' %}" alt="Profile picture" />
-            <div id="user-info">
-                <h4>{{ member.first_name }} {{ member.last_name }}
-                    {% if member.role == "admin" %}
-                    <span id="admin-tag"> (admin)</span>
-                    {% endif %}
-                </h4>
-                <p>{{ member.phone_number }}</p>
-                <p>{{ member.email }}</p>
-            </div>
+        <li>
+            <a id="user-container" href="/members/edit/{{ member.id }}/">
+                <img src="{% static 'profile-picture.svg' %}" alt="Profile picture" />
+                <div id="user-info">
+                    <h4>{{ member.first_name }} {{ member.last_name }}
+                        {% if member.role == "admin" %}
+                        <span id="admin-tag"> (admin)</span>
+                        {% endif %}
+                    </h4>
+                    <p>{{ member.phone_number }}</p>
+                    <p>{{ member.email }}</p>
+                </div>
+            </a>
         </li>
         {% endfor %}
     </ul>
