@@ -61,7 +61,7 @@
             float: right;
         }
 
-        button {
+        #delete-btn {
             padding: 0.5rem 0.5rem;
             background-color: white;
             border: 1px red solid;
@@ -90,7 +90,7 @@
     <br>
 
     {% if mode == "edit" %}
-    <form action="{{ url }}" method="post">
+    <form action="/members/edit/{{ id }}/" method="post">
         {% else %}
         <form action="/members/add/" method="post">
             {% endif %}
@@ -108,12 +108,15 @@
             {{ form.role }}
 
 
-            <input type="submit" value="Submit">
-
-            {% if mode == "edit" %}
-            <button type="button">Delete</button>
-            {% endif %}
+            <input type="submit" value="Save">
         </form>
+
+        {% if mode == "edit" %}
+        <form action="/members/delete/{{ id }}/" method="post">
+            {% csrf_token %}
+            <input type="submit" value="Delete" id="delete-btn">
+        </form>
+        {% endif %}
 
 </body>
 

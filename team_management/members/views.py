@@ -11,7 +11,7 @@ from members.utils.forms import MemberForm
 # Create your views here.
 def get_all_members(request):
     try:
-        members = Member.objects.all().values() # get all members in dict form
+        members = Member.objects.all().values()  # get all members in dict form
         return render(
             request=request, template_name="index.html", context={"members": members}
         )
@@ -133,7 +133,7 @@ def edit_member(request, id: int):
             return render(
                 request=request,
                 template_name="modify.html",
-                context={"form": form, "mode": "edit", "url": f"/members/edit/{id}/"},
+                context={"form": form, "mode": "edit", "id": id},
             )
         except Exception as err:
             return HttpResponse(err)
@@ -159,11 +159,26 @@ def edit_member_api(request, id: int):
         return HttpResponseNotAllowed(["PUT"])
 
 
+def delete_member(request, id: int):
+    if request.method == "POST":
+        try:
+            member_to_delete = Member.objects.get(id=id)
+            member_to_delete.delete()
+            return redirect("/members/")
+        except Exception as err:
+            return HttpResponse(err)
+    else:
+        return HttpResponseNotAllowed(["POST"])
+
+
 @csrf_exempt
 def delete_member_api(request, id: int):
-    try:
-        member_to_delete = Member.objects.get(id=id)
-        member_to_delete.delete()
-        return HttpResponse(f"Member deleted!")
-    except Exception as err:
-        return HttpResponse(err)
+    if request.method == "POST":
+        try:
+            member_to_delete = Member.objects.get(id=id)
+            member_to_delete.delete()
+            return HttpResponse(f"Member deleted!")
+        except Exception as err:
+            return HttpResponse(err)
+    else:
+        return HttpResponseNotAllowed(["POST"])
