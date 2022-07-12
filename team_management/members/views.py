@@ -41,15 +41,7 @@ def add_member(request):
     if request.method == "POST":
         form = MemberForm(request.POST)
         if form.is_valid():
-            member_info = {
-                "first_name": form.cleaned_data.get("first_name"),
-                "last_name": form.cleaned_data.get("last_name"),
-                "phone_number": form.cleaned_data.get("phone_number"),
-                "email": form.cleaned_data.get("email"),
-                "role": form.cleaned_data.get("role", "regular"),
-            }
-
-            valid = Member.is_valid_request(member_info)
+            valid = Member.is_valid_request(form.cleaned_data)
             if not valid[0]:
                 return HttpResponse(valid[1])
 
@@ -59,7 +51,7 @@ def add_member(request):
                 if Member.objects.filter(phone_number=phone_number).exists():
                     return HttpResponse(f"Member already exists!")
 
-                new_member = Member(**member_info)
+                new_member = Member(**form.cleaned_data)
                 new_member.save()
                 return redirect("/members/")
             except Exception as err:
@@ -68,7 +60,9 @@ def add_member(request):
             return HttpResponse("Invalid form")
     else:
         return render(
-            request=request, template_name="add.html", context={"form": MemberForm}
+            request=request,
+            template_name="modify.html",
+            context={"form": MemberForm, "mode": "add"},
         )
 
 
@@ -99,6 +93,50 @@ def add_member_api(request):
             return HttpResponse(err)
     else:
         return HttpResponseNotAllowed(["POST"])
+
+
+def edit_member(request, id: int):
+    if request.method == "POST":
+        form = MemberForm(request.POST)
+        if form.is_valid():
+            valid = Member.is_valid_request(form.cleaned_data)
+            if not valid[0]:
+                return HttpResponse(valid[1])
+
+            try:
+                phone_number = form.cleaned_data.get("phone_number")
+
+                if not Member.objects.filter(phone_number=phone_number).exists():
+                    return HttpResponse(f"Member does not exist!")
+
+                member = Member.objects.get(id=id)
+                for key, value in form.cleaned_data.items():
+                    setattr(member, key, value)
+                member.save()
+                return redirect("/members/")
+            except Exception as err:
+                return HttpResponse(err)
+        else:
+            return HttpResponse("Invalid form")
+    else:
+        try:
+            member = Member.objects.get(id=id)
+            form = MemberForm(
+                initial={
+                    "first_name": member.first_name,
+                    "last_name": member.last_name,
+                    "phone_number": member.phone_number,
+                    "email": member.email,
+                    "role": member.role,
+                }
+            )
+            return render(
+                request=request,
+                template_name="modify.html",
+                context={"form": form, "mode": "edit", "url": f"/members/edit/{id}/"},
+            )
+        except Exception as err:
+            return HttpResponse(err)
 
 
 @csrf_exempt
