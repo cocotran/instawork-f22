@@ -1,188 +1,48 @@
 import json
 
-from django.views.generic import View
+from django.views.generic import View, ListView, CreateView, DeleteView, UpdateView
 from django.http import HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.core import serializers
+from django.urls import reverse_lazy
 
 from members.models import Member
 from members.utils.forms import MemberForm
 
 # Create your views here.
-class GetAllMembersView(View):
-    def get(self, request):
-        try:
-            members = Member.objects.all().values()  # get all members in dict form
-            return render(
-                request=request,
-                template_name="index.html",
-                context={"members": members},
-            )
-        except Exception as err:
-            return HttpResponse(err)
+class MemberListView(ListView):
+    model = Member
+    template_name = "index.html"
+    context_object_name = "members"
 
 
-class AddMemberView(View):
-    def get(self, request):
-        return render(
-            request=request,
-            template_name="modify.html",
-            context={"form": MemberForm, "mode": "add"},
-        )
-
-    def post(self, request):
-        form = MemberForm(request.POST)
-        if form.is_valid():
-            valid = Member.is_valid_request(form.cleaned_data)
-            if not valid[0]:
-                return HttpResponse(valid[1])
-
-            try:
-                phone_number = form.cleaned_data.get("phone_number")
-
-                if Member.objects.filter(phone_number=phone_number).exists():
-                    return HttpResponse(f"Member already exists!")
-
-                new_member = Member(**form.cleaned_data)
-                new_member.save()
-                return redirect("/")
-            except Exception as err:
-                return HttpResponse(err)
-        else:
-            return HttpResponse("Invalid form")
+class MemberCreateView(CreateView):
+    model = Member
+    form_class = MemberForm
+    template_name = "modify.html"
+    extra_context = {"mode": "add"}
+    success_url = reverse_lazy("member-list")
 
 
-class EditMemberView(View):
-    def get(self, request, id: int):
-        try:
-            member = Member.objects.get(id=id)
-            form = MemberForm(
-                initial={
-                    "first_name": member.first_name,
-                    "last_name": member.last_name,
-                    "phone_number": member.phone_number,
-                    "email": member.email,
-                    "role": member.role,
-                }
-            )
-            return render(
-                request=request,
-                template_name="modify.html",
-                context={"form": form, "mode": "edit", "id": id},
-            )
-        except Exception as err:
-            return HttpResponse(err)
+class MemberUpdateView(UpdateView):
+    model = Member
+    form_class = MemberForm
+    template_name = "modify.html"
+    extra_context = {"mode": "edit"}
+    success_url = reverse_lazy("member-list")
 
-    def post(self, request, id: int):
-        form = MemberForm(request.POST)
-        if form.is_valid():
-            valid = Member.is_valid_request(form.cleaned_data)
-            if not valid[0]:
-                return HttpResponse(valid[1])
-
-            try:
-                phone_number = form.cleaned_data.get("phone_number")
-
-                if not Member.objects.filter(phone_number=phone_number).exists():
-                    return HttpResponse(f"Member does not exist!")
-
-                member = Member.objects.get(id=id)
-                for key, value in form.cleaned_data.items():
-                    setattr(member, key, value)
-                member.save()
-                return redirect("/")
-            except Exception as err:
-                return HttpResponse(err)
-        else:
-            return HttpResponse("Invalid form")
-
-
-class DeleteMemberView(View):
-    def post(self, request, id: int):
-        try:
-            member_to_delete = Member.objects.get(id=id)
-            member_to_delete.delete()
+    def get(self, request, *args, **kwargs):
+        if not Member.objects.filter(pk=self.kwargs.get("pk")).exists():
             return redirect("/")
-        except Exception as err:
-            return HttpResponse(err)
+        return super(MemberUpdateView, self).get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["id"] = self.object.id
+        return context
 
 
-@csrf_exempt
-def get_all_members_api(request):
-    try:
-        members = serializers.serialize("json", Member.objects.all())
-        return HttpResponse(members)
-    except Exception as err:
-        return HttpResponse(err)
-
-
-@csrf_exempt
-def get_member_by_id_api(request, id: int):
-    try:
-        member = serializers.serialize("json", [Member.objects.get(id=id)])
-        return HttpResponse(member)
-    except Exception as err:
-        return HttpResponse(err)
-
-
-@csrf_exempt
-def add_member_api(request):
-    if request.method == "POST":
-        request_body = json.loads(request.body)
-        valid = Member.is_valid_request(request_body)
-        if not valid[0]:
-            return HttpResponse(valid[1])
-
-        try:
-            phone_number = request_body.get("phone_number")
-
-            if Member.objects.filter(phone_number=phone_number).exists():
-                return HttpResponse(f"Member already exists!")
-
-            new_member = Member(
-                first_name=request_body.get("first_name"),
-                last_name=request_body.get("last_name"),
-                phone_number=phone_number,
-                email=request_body.get("email"),
-                role=request_body.get("role", "regular"),
-            )
-            new_member.save()
-            return HttpResponse(f"Member {new_member} was saved successfully")
-        except Exception as err:
-            return HttpResponse(err)
-    else:
-        return HttpResponseNotAllowed(["POST"])
-
-
-@csrf_exempt
-def edit_member_api(request, id: int):
-    if request.method == "PUT":
-        try:
-            request_body = json.loads(request.body)
-            valid = Member.is_valid_request(request_body)
-            if not valid[0]:
-                return HttpResponse(valid[1])
-
-            member = Member.objects.get(id=id)
-            for key, value in request_body.items():
-                setattr(member, key, value)
-            member.save()
-            return HttpResponse(member)
-        except Exception as err:
-            return HttpResponse(err)
-    else:
-        return HttpResponseNotAllowed(["PUT"])
-
-
-@csrf_exempt
-def delete_member_api(request, id: int):
-    if request.method == "POST":
-        try:
-            member_to_delete = Member.objects.get(id=id)
-            member_to_delete.delete()
-            return HttpResponse(f"Member deleted!")
-        except Exception as err:
-            return HttpResponse(err)
-    else:
-        return HttpResponseNotAllowed(["POST"])
+class MemberDeleteView(DeleteView):
+    model = Member
+    success_url = reverse_lazy("member-list")

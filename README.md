@@ -3,7 +3,7 @@
 Simple [Django](https://github.com/django/django) project to simulate a team-member management application that allows the user to view, edit, add, and delete team members.
 
 ## Live demo
-
+https://instawork-f22.herokuapp.com/
 
 ## Setting Up Locally
 (tested on Python 3.8.10 and Django 4.0.6)
