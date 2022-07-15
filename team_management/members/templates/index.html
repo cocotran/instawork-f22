@@ -84,7 +84,7 @@
                 {% endif %}
             </h3>
         </div>
-        <a href="/members/add/">
+        <a href="/add/">
             <img src="{% static 'add.svg' %}" alt="Add member" />
         </a>
     </header>
@@ -94,7 +94,7 @@
     <ul>
         {% for member in members %}
         <li>
-            <a id="user-container" href="/members/edit/{{ member.id }}/">
+            <a id="user-container" href="/edit/{{ member.id }}/">
                 <img src="{% static 'profile-picture.svg' %}" alt="Profile picture" />
                 <div id="user-info">
                     <h4>{{ member.first_name }} {{ member.last_name }}

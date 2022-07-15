@@ -96,9 +96,9 @@
     <br>
 
     {% if mode == "edit" %}
-    <form action="/members/edit/{{ id }}/" method="post">
+    <form action="/edit/{{ id }}/" method="post">
         {% else %}
-        <form action="/members/add/" method="post">
+        <form action="/add/" method="post">
             {% endif %}
 
             {% csrf_token %}
@@ -118,7 +118,7 @@
         </form>
 
         {% if mode == "edit" %}
-        <form action="/members/delete/{{ id }}/" method="post">
+        <form action="/delete/{{ id }}/" method="post">
             {% csrf_token %}
             <input type="submit" value="Delete" id="delete-btn">
         </form>

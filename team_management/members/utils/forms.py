@@ -26,4 +26,5 @@ class MemberForm(forms.Form):
             ("admin", "Admin - Can delete members"),
         ],
         widget=forms.RadioSelect(attrs={"class": "role"}),
+        initial=("regular", "Regular - Can't delete members"),
     )

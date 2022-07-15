@@ -46,7 +46,7 @@ class AddMemberView(View):
 
                 new_member = Member(**form.cleaned_data)
                 new_member.save()
-                return redirect("/members/")
+                return redirect("/")
             except Exception as err:
                 return HttpResponse(err)
         else:
@@ -91,7 +91,7 @@ class EditMemberView(View):
                 for key, value in form.cleaned_data.items():
                     setattr(member, key, value)
                 member.save()
-                return redirect("/members/")
+                return redirect("/")
             except Exception as err:
                 return HttpResponse(err)
         else:
@@ -103,7 +103,7 @@ class DeleteMemberView(View):
         try:
             member_to_delete = Member.objects.get(id=id)
             member_to_delete.delete()
-            return redirect("/members/")
+            return redirect("/")
         except Exception as err:
             return HttpResponse(err)
 
